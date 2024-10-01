@@ -1,0 +1,11 @@
+---
+title: "p8105_hw2_hc3563"
+author: "Hanchuan Chen"
+date: "2024-10-01"
+output: github_document
+---
+Lets start with implementing library:
+```{r}
+library(tidyverse)
+```
+

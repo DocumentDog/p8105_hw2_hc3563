@@ -4,8 +4,54 @@ author: "Hanchuan Chen"
 date: "2024-10-01"
 output: github_document
 ---
-Lets start with implementing library:
+Let's start with implementing library:
 ```{r}
 library(tidyverse)
 ```
+
+
+### Problem 1
+```{r data_setup}
+subway_df =
+  read_csv(file='./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv', na=c("NA",".","")) |>  
+  janitor::clean_names() |> 
+  select(line, station_name, station_latitude, station_longitude, route1:route11, entry, vending, entrance_type, ada) |> 
+  mutate(entry = if_else(entry == "Yes", TRUE, FALSE)) |> 
+  drop_na(line, station_name, station_longitude, station_latitude, entry, vending, entrance_type, ada)
+```
+So far I have read and cleaned the dataset. First I imported the dataset and clean the column names. Then I subset the columns I want to keep; finally I change the value in "entry" column from "Yes/No" to "TRUE/FALSE" and dropped all columns except routes since not all stations have 11 lines. Now the dataset the clean enough and has `r nrow(subway_df)` rows and `r ncol(subway_df)` columns. 
+```{r questions}
+#distinct station
+distinct_station = subway_df |> distinct(line, station_name)
+n_distinct = nrow(distinct_station)
+
+#ADA compliant
+ada_compliant = subway_df |> filter(ada == TRUE)
+n_ada = nrow(ada_compliant)
+
+#vending
+vending_yes = subway_df |> filter(vending == "YES")
+prop_vending = nrow(vending_yes) / nrow(subway_df)
+
+#distinct station that serve A train
+A_train = 
+  subway_df |> 
+  distinct(line, station_name, route1) |> 
+  filter(route1 == 'A')
+n_a_train = nrow(A_train)
+
+#ADA compliant among A train serving
+ada_and_A = 
+  subway_df |> 
+  distinct(line, station_name, route1, ada) |> 
+  filter(route1 == 'A' & ada == TRUE)
+n_ada_and_A = nrow(ada_and_A)
+```
+Using the data, we can see there are `r n_distinct` distinct stations, `r n_ada` stations are ADA compliant, and about `r prop_vending` of station entrance have vending machines. Among these distinct stations, there are `r n_a_train` stations serve A train. Among stations which serve A train, there are `r n_ada_and_A` stations are ADA compliant.
+
+
+
+
+
+
 

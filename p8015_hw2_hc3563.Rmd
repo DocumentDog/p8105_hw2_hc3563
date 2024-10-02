@@ -49,9 +49,44 @@ n_ada_and_A = nrow(ada_and_A)
 ```
 Using the data, we can see there are `r n_distinct` distinct stations, `r n_ada` stations are ADA compliant, and about `r prop_vending` of station entrance have vending machines. Among these distinct stations, there are `r n_a_train` stations serve A train. Among stations which serve A train, there are `r n_ada_and_A` stations are ADA compliant.
 
+### Problem 2
+```{r clean}
+trashwheel_df = 
+  readxl::read_excel("./data/202409 Trash Wheel Collection Data.xlsx", sheet=1) |> 
+  janitor::clean_names() |> 
+  select(dumpster:homes_powered) |> 
+  drop_na(dumpster) |> 
+  mutate(sports_balls = as.integer(sports_balls)) |> 
+  mutate(name = "trash_wheel") |> 
+  mutate(year = as.numeric(year))
 
+professor_df = 
+  readxl::read_excel("./data/202409 Trash Wheel Collection Data.xlsx", sheet=2) |> 
+  janitor::clean_names() |> 
+  select(dumpster:homes_powered) |> 
+  drop_na(dumpster, date) |> 
+  mutate(name = "professor")
 
+gwynnda_df =
+  readxl::read_excel("./data/202409 Trash Wheel Collection Data.xlsx", sheet=4) |> 
+  janitor::clean_names() |> 
+  select(dumpster:homes_powered) |> 
+  drop_na(dumpster) |> 
+  mutate(name = "gwynnda")
 
+#bind the three datasets
+full_df = bind_rows(trashwheel_df, professor_df, gwynnda_df)
+```
+By importing and cleaning excel tables, there are now three datasets available: trashwheel_df, professor_df, and gwynnda_df. For trashwheel_df, which is the first sheet in excel, there are `r nrow(trashwheel_df)` rows and `r ncol(trashwheel_df)` columns, and the variables are shown below: `r names(trashwheel_df)`. Professor_df has `r nrow(professor_df)` rows and `r ncol(professor_df)` columns; gwynnda_df has `r nrow(gwynnda_df)` rows and `r ncol(gwynnda_df)` columns, while both datasets do not contain "sports_balls" variable.
+```{r}
+total_weight = sum(professor_df$weight_tons)
 
+total_butts =
+  gwynnda_df |> 
+  filter(month == "June" & year == 2022) |> 
+  pull(cigarette_butts) |> 
+  sum()
+```
+From professor_df, we can see that the total weight of trash collected by professor trash wheel is `r total_weight` tons. Also, the total number of cigarette butts collected by Gwynnda in June of 2022 is `r total_butts`.
 
 

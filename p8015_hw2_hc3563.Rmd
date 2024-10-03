@@ -90,3 +90,80 @@ total_butts =
 From professor_df, we can see that the total weight of trash collected by professor trash wheel is `r total_weight` tons. Also, the total number of cigarette butts collected by Gwynnda in June of 2022 is `r total_butts`.
 
 
+### Problem 3
+```{r}
+bakers_df = 
+  read_csv("./data/gbb_datasets/bakers.csv") |> 
+  janitor::clean_names() |> 
+  rename(baker = baker_name) |> 
+  mutate(baker = word(baker, 1))
+
+bakes_df = 
+  read_csv("./data/gbb_datasets/bakes.csv") |> 
+  janitor::clean_names()
+
+results_df = 
+  read_csv("./data/gbb_datasets/results.csv", skip=2) |> 
+  janitor::clean_names() 
+```
+
+```{r left_join}
+results_bakers_df = left_join(results_df, bakers_df, by=c("baker","series"))
+full_df = left_join(results_bakers_df, bakes_df, by=c("baker","series","episode"))
+full_df = 
+  full_df |> 
+  drop_na(result) |> 
+  arrange(series, baker, episode)
+```
+
+```{r output}
+write.csv(full_df, file="./data/merged_data.csv", row.names = FALSE)
+```
+
+The code above is the whole process of dealing with these three datasets. First I imported each of them take a look of each dataset. I found that in "bakers" dataset the column name of the bakers are different from other two datasets, and this dataset contains the full name but other two only have first name. So I rename the column and subset the first name in this dataset to make sure it can merge with other two. In the "results" dataset the first two rows are comments so I skipped them. 
+
+In the joining process, I first left join bakers to results dataset since results table has the full records so set it as left table will not lose records; also I joined these two tables by using two variables: baker and series, as there are one baker showed in different series. Then I used this joined table as left table and left joined "bakes" table. I added "episode" as unique variable to make sure it won't cause many to many join. Next, I dropped the missing values contained in result column and sort the table by series, baker, and episode, so it is clear so see in which series, which episode does the baker get in to the next round or get out. 
+
+```{r}
+winner_df = 
+  full_df |> 
+  filter(series >= 5 & series <= 10) |> 
+  filter(result == "STAR BAKER" | result == "WINNER") |> 
+  arrange(series, episode)
+
+knitr::kable(winner_df, format = "html")
+```
+From this table we can see that usually the winner came from the star baker in each episode and the technical score is usually 1 or 2, which is pretty predictable.
+
+
+```{r}
+viewers_df = 
+  read_csv("./data/gbb_datasets/viewers.csv")
+
+head(viewers_df, 10)
+
+mean_1 = mean(viewers_df$`Series 1`, na.rm = TRUE)
+mean_5 = mean(viewers_df$`Series 5`, na.rm = TRUE)
+```
+
+From the table "viewers" we can see that the mean viewship for season 1 is `r mean_1` and for season 5 is `r mean_5`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
